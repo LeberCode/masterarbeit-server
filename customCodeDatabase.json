@@ -1,12 +1,12 @@
 [
   {
     "type": "Sender",
-    "id": "7470e3ef-d810-46e9-8d17-5f5153eccd81",
+    "id": "95d31679-bbf6-43b5-82d9-665ae85d6eb2",
     "code": "// publisher.js\nconst amqp = require('amqplib/callback_api');\n\nconst rabbitmqUrl = 'amqp://mquser:mqpass@rabbit:5672';\n\namqp.connect(rabbitmqUrl, (error0, connection) => {\n    if (error0) {\n        throw error0;\n    }\n    connection.createChannel((error1, channel) => {\n        if (error1) {\n            throw error1;\n        }\n\n        const queue = 'hello';\n\n        channel.assertQueue(queue, {\n            durable: false\n        });\n\n        const sendMessage = () => {\n            const msg = 'Hello World! ' + new Date().toISOString();\n            channel.sendToQueue(queue, Buffer.from(msg));\n            console.log(\" [x] Sent '%s'\", msg);\n        };\n\n        setInterval(sendMessage, 1000);\n    });\n});\n"
   },
   {
     "type": "Receiver",
-    "id": "4e6acb5f-49f6-40ea-a7d0-2e84bb601897",
+    "id": "bb3a3016-f851-4487-8255-db4a664417f6",
     "code": "// consumer.js\nconst amqp = require('amqplib/callback_api');\n\nconst rabbitmqUrl = 'amqp://mquser:mqpass@rabbit:5672';\n\namqp.connect(rabbitmqUrl, (error0, connection) => {\n    if (error0) {\n        throw error0;\n    }\n    connection.createChannel((error1, channel) => {\n        if (error1) {\n            throw error1;\n        }\n\n        const queue = 'hello';\n\n        channel.assertQueue(queue, {\n            durable: false\n        });\n\n        console.log(\" [*] Waiting for messages in %s. To exit press CTRL+C\", queue);\n\n        channel.consume(queue, (msg) => {\n            console.log(\" [x] Received '%s'\", msg.content.toString());\n        }, {\n            noAck: true\n        });\n    });\n});\n"
   }
 ]

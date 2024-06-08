@@ -181,6 +181,40 @@ function getContainerImageInfosByName(name) {
   return imageInfosArray;
 }
 
+function pauseDockerContainer(containerId) {
+  console.log(`::Start pausing Docker container ${containerId}`);
+
+  let pauseProcess = spawnSync(`docker pause ${containerId}`, [], {
+    shell: true,
+    encoding: "utf-8",
+    stdio: ["inherit", "inherit", "pipe"],
+  });
+
+  if (pauseProcess.stderr && pauseProcess.stderr.length > 0) {
+    console.log(`::Failed to pause Docker container ${containerId}`);
+    throw new Error(pauseProcess.stderr);
+  }
+
+  console.log(`::Docker container ${containerId} has been paused`);
+}
+
+function unpauseDockerContainer(containerId) {
+  console.log(`::Start unpausing Docker container ${containerId}`);
+
+  let unpauseProcess = spawnSync(`docker unpause ${containerId}`, [], {
+    shell: true,
+    encoding: "utf-8",
+    stdio: ["inherit", "inherit", "pipe"],
+  });
+
+  if (unpauseProcess.stderr && unpauseProcess.stderr.length > 0) {
+    console.log(`::Failed to unpause Docker container ${containerId}`);
+    throw new Error(unpauseProcess.stderr);
+  }
+
+  console.log(`::Docker container ${containerId} has been unpaused`);
+}
+
 function buildAndRunDocker(
   path,
   dockerImageName,
@@ -204,4 +238,6 @@ module.exports = {
   killDockerContainer,
   removeDockerContainer,
   removeDockerImage,
+  pauseDockerContainer,
+  unpauseDockerContainer,
 };

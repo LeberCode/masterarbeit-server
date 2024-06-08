@@ -1,10 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const {
-  emptyCustomCodeDatabase,
-  clearDocker,
-} = require("./src/functions/helperFunctions");
+const { emptyCustomCodeDatabase } = require("./src/functions/helperFunctions");
+const { startRabbitmq } = require("./src/docker/dockerManager");
 
 const customCodeRouter = require("./src/routes/customCodeRouter");
 const deployRouter = require("./src/routes/deployRouter");
@@ -22,6 +20,7 @@ server.get("/", (req, res) => {
 });
 
 emptyCustomCodeDatabase();
+startRabbitmq();
 // clearDocker();
 
 server.listen(PORT, () => {

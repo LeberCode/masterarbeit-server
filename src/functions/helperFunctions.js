@@ -1,9 +1,10 @@
 const fs = require("fs").promises;
 const path = require("path");
 const {
-  startRabbitmq,
   buildDockerImage,
   runDockerContainer,
+  pauseDockerContainer,
+  unpauseDockerContainer,
 } = require("../docker/dockerManager");
 
 const fillDockerJS = async (code) => {
@@ -92,8 +93,6 @@ let HOSTPORT = 9090;
 let CONTAINERPORT = 9090;
 
 const deployArchitecture = async () => {
-  await startRabbitmq();
-  await sleep(5000);
   const customCodes = await getCustomCodes();
   for (const customCode of customCodes) {
     await fillDockerJS(customCode.code);
@@ -113,6 +112,20 @@ const deployArchitecture = async () => {
   }
 };
 
+const stopArchitecture = async () => {
+  const customCodes = await getCustomCodes();
+  for (const customCode of customCodes) {
+    await pauseDockerContainer(customCode.id);
+  }
+};
+
+const restartArchitecture = async () => {
+  const customCodes = await getCustomCodes();
+  for (const customCode of customCodes) {
+    await unpauseDockerContainer(customCode.id);
+  }
+};
+
 const clearDocker = () => {
   // Docker Container
   // Docker Files
@@ -127,4 +140,6 @@ module.exports = {
   getCustomCodes,
   deployArchitecture,
   clearDocker,
+  stopArchitecture,
+  restartArchitecture,
 };
