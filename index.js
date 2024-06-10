@@ -15,7 +15,7 @@ const PORT = 3001;
 app.use(cors());
 app.use(bodyParser.json());
 app.use("/customCode", customCodeRouter);
-app.use("/deploy", deployRouter);
+app.use("/deployment", deployRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

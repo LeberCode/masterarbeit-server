@@ -4,12 +4,13 @@ const {
   stopArchitecture,
   restartArchitecture,
 } = require("../functions/helperFunctions");
+const { dockerCleanUp } = require("../docker/dockerManager");
 
 const deployRouter = express.Router();
 
 deployRouter.post("/run", async (req, res) => {
   try {
-    deployArchitecture();
+    await deployArchitecture();
     res.status(200).json({ message: "Deployment erfolgreich!" });
   } catch (e) {
     console.error(e);
@@ -19,7 +20,7 @@ deployRouter.post("/run", async (req, res) => {
 
 deployRouter.post("/stop", async (req, res) => {
   try {
-    stopArchitecture();
+    await stopArchitecture();
     res.status(200).json({ message: "Stop erfolgreich!" });
   } catch (e) {
     console.error(e);
@@ -29,11 +30,21 @@ deployRouter.post("/stop", async (req, res) => {
 
 deployRouter.post("/restart", async (req, res) => {
   try {
-    restartArchitecture();
+    await restartArchitecture();
     res.status(200).json({ message: "Stop erfolgreich!" });
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "Stop fehlgeschlagen!" });
+  }
+});
+
+deployRouter.get("/clearDocker", async (rey, res) => {
+  try {
+    await dockerCleanUp();
+    res.status(200).json({ message: "Docker leeren erfoglreich" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Docker leeren fehlgeschlagen" });
   }
 });
 
