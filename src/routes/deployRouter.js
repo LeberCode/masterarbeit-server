@@ -3,8 +3,8 @@ const {
   deployArchitecture,
   stopArchitecture,
   restartArchitecture,
+  clearArchitecture,
 } = require("../functions/helperFunctions");
-const { dockerCleanUp } = require("../docker/dockerManager");
 
 const deployRouter = express.Router();
 
@@ -38,9 +38,9 @@ deployRouter.post("/restart", async (req, res) => {
   }
 });
 
-deployRouter.get("/clearDocker", async (rey, res) => {
+deployRouter.get("/clearArchitecture", async (rey, res) => {
   try {
-    await dockerCleanUp();
+    await clearArchitecture();
     res.status(200).json({ message: "Docker leeren erfoglreich" });
   } catch (e) {
     console.error(e);

@@ -51,10 +51,8 @@ const addCustomCodeToJson = async (newElement) => {
   const dataFilePath = path.resolve(__dirname, "../../customCodeDatabase.json");
 
   try {
-    const data = await fs.readFile(dataFilePath, "utf-8");
-    let jsonArray;
-    jsonArray = JSON.parse(data);
-    const existingFilter = jsonArray.find(
+    const customCodes = await getCustomCodes();
+    const existingFilter = customCodes.find(
       (element) => element.id === newElement.id
     );
     if (existingFilter) {
@@ -64,12 +62,12 @@ const addCustomCodeToJson = async (newElement) => {
       existingFilter.code = newElement.code;
       existingFilter.isDeployed = false;
     } else {
-      jsonArray.push(newElement);
+      customCodes.push(newElement);
     }
 
     await fs.writeFile(
       dataFilePath,
-      JSON.stringify(jsonArray, null, 2),
+      JSON.stringify(customCodes, null, 2),
       "utf8"
     );
     console.log("Neues Element erfolgreich hinzugefügt.");
@@ -82,14 +80,12 @@ const addCustomCodeToJson = async (newElement) => {
 const setIsDeployed = async (id) => {
   const dataFilePath = path.resolve(__dirname, "../../customCodeDatabase.json");
   try {
-    const data = await fs.readFile(dataFilePath, "utf-8");
-    let jsonArray;
-    jsonArray = JSON.parse(data);
-    let elementToChange = jsonArray.find((element) => element.id === id);
+    const customCodes = await getCustomCodes();
+    let elementToChange = customCodes.find((element) => element.id === id);
     elementToChange.isDeployed = true;
     await fs.writeFile(
       dataFilePath,
-      JSON.stringify(jsonArray, null, 2),
+      JSON.stringify(customCodes, null, 2),
       "utf8"
     );
   } catch (err) {
@@ -157,10 +153,26 @@ const restartArchitecture = async () => {
   await deployArchitecture();
 };
 
-const clearDocker = () => {
-  // Docker Container
-  // Docker Files
-  // Docker Network
+const clearArchitecture = async () => {
+  try {
+    const dataFilePath = path.resolve(
+      __dirname,
+      "../../customCodeDatabase.json"
+    );
+    const customCodes = await getCustomCodes();
+    for (const customCode of customCodes) {
+      if (customCode.isDeployed) {
+        await killDockerContainer(customCode.id);
+        await removeDockerContainer(customCode.id);
+        await removeDockerImage(customCode.id);
+      }
+    }
+    await fs.writeFile(dataFilePath, "[]", "utf8");
+    console.log("Docker erfolgreich geleert, JSON erfolgreich geleert");
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
 module.exports = {
@@ -170,7 +182,7 @@ module.exports = {
   addCustomCodeToJson,
   getCustomCodes,
   deployArchitecture,
-  clearDocker,
+  clearArchitecture,
   stopArchitecture,
   restartArchitecture,
 };

@@ -22,7 +22,6 @@ app.get("/", (req, res) => {
 });
 
 emptyCustomCodeDatabase();
-// clearDocker();
 
 const server = http.createServer(app);
 

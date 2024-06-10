@@ -366,5 +366,4 @@ module.exports = {
   pauseDockerContainer,
   unpauseDockerContainer,
   dockerCleanUp,
-  killDockerContainer,
 };
