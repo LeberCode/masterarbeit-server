@@ -215,7 +215,7 @@ function unpauseDockerContainer(containerId) {
   console.log(`::Docker container ${containerId} has been unpaused`);
 }
 
-function dockerCleanUp() {
+function deleteAllContainer() {
   console.log("::Start removing all Docker containers");
 
   // Alle Docker-Container abrufen
@@ -272,7 +272,9 @@ function dockerCleanUp() {
   } else {
     console.log("::No Docker containers found");
   }
+}
 
+function deleteAllImages() {
   console.log("::Start removing all Docker images");
 
   // Alle Docker-Images abrufen
@@ -312,6 +314,9 @@ function dockerCleanUp() {
   } else {
     console.log("::No Docker images found");
   }
+}
+
+function pruneDockerNetwork() {
   console.log("::Start pruning unused Docker networks");
 
   // Unbenutzte Docker-Netzwerke bereinigen
@@ -327,6 +332,12 @@ function dockerCleanUp() {
   }
 
   console.log("::All unused Docker networks have been pruned");
+}
+
+function dockerCleanUp() {
+  deleteAllContainer();
+  deleteAllImages();
+  pruneDockerNetwork();
 }
 
 function buildAndRunDocker(
