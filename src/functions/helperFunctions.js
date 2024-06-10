@@ -5,6 +5,9 @@ const {
   runDockerContainer,
   pauseDockerContainer,
   unpauseDockerContainer,
+  removeDockerContainer,
+  removeDockerImage,
+  killDockerContainer,
 } = require("../docker/dockerManager");
 
 const fillDockerJS = async (code) => {
@@ -55,7 +58,11 @@ const addCustomCodeToJson = async (newElement) => {
       (element) => element.id === newElement.id
     );
     if (existingFilter) {
+      await killDockerContainer(newElement.id);
+      await removeDockerContainer(newElement.id);
+      await removeDockerImage(newElement.id);
       existingFilter.code = newElement.code;
+      existingFilter.isDeployed = false;
     } else {
       jsonArray.push(newElement);
     }
@@ -69,6 +76,24 @@ const addCustomCodeToJson = async (newElement) => {
   } catch (err) {
     console.error(err);
     throw err;
+  }
+};
+
+const setIsDeployed = async (id) => {
+  const dataFilePath = path.resolve(__dirname, "../../customCodeDatabase.json");
+  try {
+    const data = await fs.readFile(dataFilePath, "utf-8");
+    let jsonArray;
+    jsonArray = JSON.parse(data);
+    let elementToChange = jsonArray.find((element) => element.id === id);
+    elementToChange.isDeployed = true;
+    await fs.writeFile(
+      dataFilePath,
+      JSON.stringify(jsonArray, null, 2),
+      "utf8"
+    );
+  } catch (err) {
+    console.error(err);
   }
 };
 
@@ -95,20 +120,23 @@ let CONTAINERPORT = 9090;
 const deployArchitecture = async () => {
   const customCodes = await getCustomCodes();
   for (const customCode of customCodes) {
-    await fillDockerJS(customCode.code);
-    const filePath = path.join(__dirname, "../../");
-    const dockerImageName = customCode.id;
-    const dockerContainerName = customCode.id;
-    await buildDockerImage(filePath, dockerImageName);
-    await runDockerContainer(
-      dockerImageName,
-      dockerContainerName,
-      HOSTPORT,
-      CONTAINERPORT
-    );
-    await emptyDockerJS();
-    HOSTPORT++;
-    CONTAINERPORT++;
+    if (!customCode.isDeployed) {
+      await fillDockerJS(customCode.code);
+      const filePath = path.join(__dirname, "../../");
+      const dockerImageName = customCode.id;
+      const dockerContainerName = customCode.id;
+      await buildDockerImage(filePath, dockerImageName);
+      await runDockerContainer(
+        dockerImageName,
+        dockerContainerName,
+        HOSTPORT,
+        CONTAINERPORT
+      );
+      await emptyDockerJS();
+      HOSTPORT++;
+      CONTAINERPORT++;
+      await setIsDeployed(customCode.id);
+    }
   }
 };
 
@@ -122,8 +150,11 @@ const stopArchitecture = async () => {
 const restartArchitecture = async () => {
   const customCodes = await getCustomCodes();
   for (const customCode of customCodes) {
-    await unpauseDockerContainer(customCode.id);
+    if (customCode.isDeployed) {
+      await unpauseDockerContainer(customCode.id);
+    }
   }
+  await deployArchitecture();
 };
 
 const clearDocker = () => {
