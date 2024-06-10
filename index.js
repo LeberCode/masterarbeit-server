@@ -1,28 +1,42 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const http = require("http");
+
 const { emptyCustomCodeDatabase } = require("./src/functions/helperFunctions");
-const { startRabbitmq } = require("./src/docker/dockerManager");
+const { startRabbitmq, dockerCleanUp } = require("./src/docker/dockerManager");
 
 const customCodeRouter = require("./src/routes/customCodeRouter");
 const deployRouter = require("./src/routes/deployRouter");
 
-const server = express();
+const app = express();
 const PORT = 3001;
 
-server.use(cors());
-server.use(bodyParser.json());
-server.use("/customCode", customCodeRouter);
-server.use("/deploy", deployRouter);
+app.use(cors());
+app.use(bodyParser.json());
+app.use("/customCode", customCodeRouter);
+app.use("/deploy", deployRouter);
 
-server.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
 emptyCustomCodeDatabase();
 // clearDocker();
 
+const server = http.createServer(app);
+
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
   startRabbitmq();
+});
+
+process.on("SIGINT", () => {
+  console.log("SIGINT empfangen. Server wird beendet...");
+  dockerCleanUp();
+
+  server.close(() => {
+    console.log("HTTP-Server geschlossen");
+    process.exit(0);
+  });
 });

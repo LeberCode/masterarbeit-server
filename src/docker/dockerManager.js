@@ -215,6 +215,120 @@ function unpauseDockerContainer(containerId) {
   console.log(`::Docker container ${containerId} has been unpaused`);
 }
 
+function dockerCleanUp() {
+  console.log("::Start removing all Docker containers");
+
+  // Alle Docker-Container abrufen
+  let listContainersProcess = spawnSync("docker ps -aq", [], {
+    shell: true,
+    encoding: "utf-8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  if (listContainersProcess.stderr && listContainersProcess.stderr.length > 0) {
+    console.log("::Failed to retrieve Docker containers");
+    throw new Error(listContainersProcess.stderr);
+  }
+
+  const containerIds = listContainersProcess.stdout
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+
+  if (containerIds.length > 0) {
+    console.log(`::Removing ${containerIds.length} Docker containers`);
+
+    // Alle Docker-Container stoppen
+    let stopContainersProcess = spawnSync("docker stop $(docker ps -aq)", [], {
+      shell: true,
+      encoding: "utf-8",
+      stdio: ["inherit", "inherit", "pipe"],
+    });
+
+    if (
+      stopContainersProcess.stderr &&
+      stopContainersProcess.stderr.length > 0
+    ) {
+      console.log("::Failed to stop Docker containers");
+      throw new Error(stopContainersProcess.stderr);
+    }
+
+    // Alle Docker-Container entfernen
+    let removeContainersProcess = spawnSync("docker rm $(docker ps -aq)", [], {
+      shell: true,
+      encoding: "utf-8",
+      stdio: ["inherit", "inherit", "pipe"],
+    });
+
+    if (
+      removeContainersProcess.stderr &&
+      removeContainersProcess.stderr.length > 0
+    ) {
+      console.log("::Failed to remove Docker containers");
+      throw new Error(removeContainersProcess.stderr);
+    }
+
+    console.log("::All Docker containers have been removed");
+  } else {
+    console.log("::No Docker containers found");
+  }
+
+  console.log("::Start removing all Docker images");
+
+  // Alle Docker-Images abrufen
+  let listImagesProcess = spawnSync("docker images -aq", [], {
+    shell: true,
+    encoding: "utf-8",
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  if (listImagesProcess.stderr && listImagesProcess.stderr.length > 0) {
+    console.log("::Failed to retrieve Docker images");
+    throw new Error(listImagesProcess.stderr);
+  }
+
+  const imageIds = listImagesProcess.stdout.trim().split("\n").filter(Boolean);
+
+  if (imageIds.length > 0) {
+    console.log(`::Removing ${imageIds.length} Docker images`);
+
+    // Alle Docker-Images entfernen
+    let removeImagesProcess = spawnSync(
+      "docker rmi -f $(docker images -aq)",
+      [],
+      {
+        shell: true,
+        encoding: "utf-8",
+        stdio: ["inherit", "inherit", "pipe"],
+      }
+    );
+
+    if (removeImagesProcess.stderr && removeImagesProcess.stderr.length > 0) {
+      console.log("::Failed to remove Docker images");
+      throw new Error(removeImagesProcess.stderr);
+    }
+
+    console.log("::All Docker images have been removed");
+  } else {
+    console.log("::No Docker images found");
+  }
+  console.log("::Start pruning unused Docker networks");
+
+  // Unbenutzte Docker-Netzwerke bereinigen
+  let pruneNetworksProcess = spawnSync("docker network prune -f", [], {
+    shell: true,
+    encoding: "utf-8",
+    stdio: ["inherit", "inherit", "pipe"],
+  });
+
+  if (pruneNetworksProcess.stderr && pruneNetworksProcess.stderr.length > 0) {
+    console.log("::Failed to prune Docker networks");
+    throw new Error(pruneNetworksProcess.stderr);
+  }
+
+  console.log("::All unused Docker networks have been pruned");
+}
+
 function buildAndRunDocker(
   path,
   dockerImageName,
@@ -240,4 +354,5 @@ module.exports = {
   removeDockerImage,
   pauseDockerContainer,
   unpauseDockerContainer,
+  dockerCleanUp,
 };
