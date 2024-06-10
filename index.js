@@ -20,9 +20,9 @@ server.get("/", (req, res) => {
 });
 
 emptyCustomCodeDatabase();
-startRabbitmq();
 // clearDocker();
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+  startRabbitmq();
 });
