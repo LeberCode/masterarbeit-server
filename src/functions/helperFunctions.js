@@ -92,6 +92,21 @@ const setIsDeployed = async (id) => {
     console.error(err);
   }
 };
+const setIsPaused = async (id) => {
+  const dataFilePath = path.resolve(__dirname, "../../customCodeDatabase.json");
+  try {
+    const customCodes = await getCustomCodes();
+    let elementToChange = customCodes.find((element) => element.id === id);
+    elementToChange.isPaused = !elementToChange.isPaused;
+    await fs.writeFile(
+      dataFilePath,
+      JSON.stringify(customCodes, null, 2),
+      "utf8"
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const getCustomCodes = async () => {
   const dataFilePath = path.resolve(__dirname, "../../customCodeDatabase.json");
@@ -140,14 +155,16 @@ const stopArchitecture = async () => {
   const customCodes = await getCustomCodes();
   for (const customCode of customCodes) {
     await pauseDockerContainer(customCode.id);
+    await setIsPaused(customCode.id);
   }
 };
 
 const restartArchitecture = async () => {
   const customCodes = await getCustomCodes();
   for (const customCode of customCodes) {
-    if (customCode.isDeployed) {
+    if (customCode.isPaused) {
       await unpauseDockerContainer(customCode.id);
+      await setIsPaused(customCode.id);
     }
   }
   await deployArchitecture();
