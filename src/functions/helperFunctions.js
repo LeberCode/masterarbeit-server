@@ -55,12 +55,14 @@ const addCustomCodeToJson = async (newElement) => {
     const existingFilter = customCodes.find(
       (element) => element.id === newElement.id
     );
-    if (existingFilter) {
+    if (existingFilter && existingFilter.isDeployed) {
       await killDockerContainer(newElement.id);
       await removeDockerContainer(newElement.id);
       await removeDockerImage(newElement.id);
       existingFilter.code = newElement.code;
       existingFilter.isDeployed = false;
+    } else if (existingFilter && !existingFilter.isDeployed) {
+      existingFilter.code = newElement.code;
     } else {
       customCodes.push(newElement);
     }
