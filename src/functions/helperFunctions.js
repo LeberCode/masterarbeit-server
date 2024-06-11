@@ -194,6 +194,29 @@ const clearArchitecture = async () => {
   }
 };
 
+const scaleOut = async (id) => {
+  try {
+    const dataFilePath = path.resolve(
+      __dirname,
+      "../../customCodeDatabase.json"
+    );
+    const customCodes = await getCustomCodes();
+    const codeToScale = customCodes.find((code) => code.id === id);
+    const scaledCode = JSON.parse(JSON.stringify(codeToScale));
+    scaledCode.isScaled = true;
+    scaledCode.id;
+    customCodes.push(scaledCode);
+    await fs.writeFile(
+      dataFilePath,
+      JSON.stringify(customCodes, null, 2),
+      "utf8"
+    );
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+
 module.exports = {
   emptyDockerJS,
   fillDockerJS,
@@ -204,4 +227,5 @@ module.exports = {
   clearArchitecture,
   stopArchitecture,
   restartArchitecture,
+  scaleOut,
 };

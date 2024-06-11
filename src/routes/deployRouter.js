@@ -4,6 +4,7 @@ const {
   stopArchitecture,
   restartArchitecture,
   clearArchitecture,
+  scaleOut,
 } = require("../functions/helperFunctions");
 
 const deployRouter = express.Router();
@@ -38,13 +39,24 @@ deployRouter.post("/restart", async (req, res) => {
   }
 });
 
-deployRouter.get("/clearArchitecture", async (rey, res) => {
+deployRouter.get("/clearArchitecture", async (req, res) => {
   try {
     await clearArchitecture();
     res.status(200).json({ message: "Docker leeren erfoglreich" });
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "Docker leeren fehlgeschlagen" });
+  }
+});
+
+deployRouter.post("/scaleOut", async (req, res) => {
+  try {
+    const { codeId } = req.body;
+    await scaleOut(codeId);
+    res.status(200).json({ message: "Scale Out erfolgreich" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Scale Out fehlgeschlagen" });
   }
 });
 
