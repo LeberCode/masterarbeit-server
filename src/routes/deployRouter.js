@@ -51,8 +51,8 @@ deployRouter.get("/clearArchitecture", async (req, res) => {
 
 deployRouter.post("/scaleOut", async (req, res) => {
   try {
-    const { codeId } = req.body;
-    await scaleOut(codeId);
+    const { id } = req.body;
+    await scaleOut(id);
     res.status(200).json({ message: "Scale Out erfolgreich" });
   } catch (e) {
     console.error(e);
