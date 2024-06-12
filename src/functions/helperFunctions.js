@@ -62,6 +62,7 @@ const addCustomCodeToJson = async (newElement) => {
       await removeDockerImage(newElement.id);
       existingFilter.code = newElement.code;
       existingFilter.isDeployed = false;
+      existingFilter.isPaused = false;
     } else if (existingFilter && !existingFilter.isDeployed) {
       existingFilter.code = newElement.code;
     } else {
@@ -214,7 +215,7 @@ const scaleOut = async (id) => {
       JSON.stringify(customCodes, null, 2),
       "utf8"
     );
-    restartArchitecture();
+    await restartArchitecture();
   } catch (err) {
     console.error(err);
     throw err;
