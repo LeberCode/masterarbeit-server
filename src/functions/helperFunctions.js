@@ -9,6 +9,7 @@ const {
   removeDockerImage,
   killDockerContainer,
 } = require("../docker/dockerManager");
+const { v4: uuidv4 } = require("uuid");
 
 const fillDockerJS = async (code) => {
   const filePath = path.resolve(__dirname, "../../docker.js");
@@ -203,14 +204,17 @@ const scaleOut = async (id) => {
     const customCodes = await getCustomCodes();
     const codeToScale = customCodes.find((code) => code.id === id);
     const scaledCode = JSON.parse(JSON.stringify(codeToScale));
-    scaledCode.isScaled = true;
-    scaledCode.id;
+    scaledCode.isScaled = id;
+    scaledCode.id = uuidv4();
+    scaledCode.isDeployed = false;
+    scaledCode.isPaused = false;
     customCodes.push(scaledCode);
     await fs.writeFile(
       dataFilePath,
       JSON.stringify(customCodes, null, 2),
       "utf8"
     );
+    restartArchitecture();
   } catch (err) {
     console.error(err);
     throw err;
