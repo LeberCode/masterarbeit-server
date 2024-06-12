@@ -5,6 +5,7 @@ const {
   restartArchitecture,
   clearArchitecture,
   scaleOut,
+  scalingCounter,
 } = require("../functions/helperFunctions");
 
 const deployRouter = express.Router();
@@ -57,6 +58,16 @@ deployRouter.post("/scaleOut", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "Scale Out fehlgeschlagen" });
+  }
+});
+
+deployRouter.get("/scaleValues", async (req, res) => {
+  try {
+    const result = await scalingCounter();
+    res.status(200).json({ result, message: "Scale Values erfolgreich" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "Scale Values fehlgeschlagen" });
   }
 });
 

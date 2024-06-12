@@ -222,6 +222,30 @@ const scaleOut = async (id) => {
   }
 };
 
+const scalingCounter = async () => {
+  const customCodes = await getCustomCodes();
+
+  const idCounts = {};
+
+  customCodes.forEach((code) => {
+    if (code.id !== undefined) {
+      if (!idCounts[code.id] && code.isScaled === "") {
+        idCounts[code.id] = 0;
+        idCounts[code.id]++;
+      }
+      if (code.isScaled !== "") {
+        idCounts[code.isScaled]++;
+      }
+    }
+  });
+
+  const result = Object.keys(idCounts).map((id) => {
+    return { id: id, count: idCounts[id] };
+  });
+
+  return result;
+};
+
 module.exports = {
   emptyDockerJS,
   fillDockerJS,
@@ -233,4 +257,5 @@ module.exports = {
   stopArchitecture,
   restartArchitecture,
   scaleOut,
+  scalingCounter,
 };
