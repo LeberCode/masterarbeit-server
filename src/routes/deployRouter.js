@@ -57,7 +57,11 @@ deployRouter.post("/scaleOut", async (req, res) => {
     res.status(200).json({ message: "Scale Out erfolgreich" });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ message: "Scale Out fehlgeschlagen" });
+    if (e.name === "CustomError") {
+      res.status(500).json({ message: e.message });
+    } else {
+      res.status(500).json({ message: "Scale Out fehlgeschlagen" });
+    }
   }
 });
 

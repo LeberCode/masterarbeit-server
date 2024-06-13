@@ -10,6 +10,7 @@ const {
   killDockerContainer,
 } = require("../docker/dockerManager");
 const { v4: uuidv4 } = require("uuid");
+const CustomError = require("./errors.js");
 
 const fillDockerJS = async (code) => {
   const filePath = path.resolve(__dirname, "../../docker.js");
@@ -204,6 +205,11 @@ const scaleOut = async (id) => {
     );
     const customCodes = await getCustomCodes();
     const codeToScale = customCodes.find((code) => code.id === id);
+    if (!codeToScale) {
+      throw new CustomError("Need to code first!", 500);
+    } else if (!codeToScale.isDeployed) {
+      throw new CustomError("Need to deploy first!", 500);
+    }
     const scaledCode = JSON.parse(JSON.stringify(codeToScale));
     scaledCode.isScaled = id;
     scaledCode.id = uuidv4();
