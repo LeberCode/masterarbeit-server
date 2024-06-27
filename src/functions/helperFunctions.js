@@ -159,8 +159,10 @@ const deployArchitecture = async () => {
 const stopArchitecture = async () => {
   const customCodes = await getCustomCodes();
   for (const customCode of customCodes) {
-    await pauseDockerContainer(customCode.id);
-    await setIsPaused(customCode.id);
+    if (!customCode.isPaused) {
+      await pauseDockerContainer(customCode.id);
+      await setIsPaused(customCode.id);
+    }
   }
 };
 
